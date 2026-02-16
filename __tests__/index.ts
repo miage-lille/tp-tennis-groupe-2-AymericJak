@@ -5,10 +5,11 @@ import {
   scoreWhenAdvantage,
   scoreWhenDeuce,
   scoreWhenForty,
+  scoreWhenPoint,
   stringToPoint,
 } from '..';
 import { stringToPlayer } from '../types/player';
-import { advantage, deuce, forty, game, thirty } from '../types/score';
+import { advantage, deuce, forty, game, points, thirty } from '../types/score';
 
 describe('Tests for tooling functions', () => {
   test('Given playerOne when playerToString', () => {
@@ -86,15 +87,37 @@ describe('Tests for transition functions', () => {
   });
 
   // -------------------------TESTS POINTS-------------------------- //
-  // test('Given players at 0 or 15 points score kind is still POINTS', () => {
-  //   throw new Error(
-  //     'Your turn to code the preconditions, expected result and test.'
-  //   );
-  // });
+  test('Given players at 0 or 15 points score kind is still POINTS', () => {
+    ['PLAYER_ONE', 'PLAYER_TWO'].forEach(winner => {
+      const current = {
+        PLAYER_ONE: stringToPoint('LOVE'),
+        PLAYER_TWO: stringToPoint('FIFTEEN'),
+      };
+      const score = scoreWhenPoint(current, stringToPlayer(winner));
+      const scoreExpected =
+        winner === 'PLAYER_ONE'
+          ? points(stringToPoint('FIFTEEN'), stringToPoint('FIFTEEN'))
+          : points(stringToPoint('LOVE'), stringToPoint('THIRTY'));
+      expect(score).toStrictEqual(scoreExpected);
+    });
+  });
 
-  // test('Given one player at 30 and win, score kind is forty', () => {
-  //   throw new Error(
-  //     'Your turn to code the preconditions, expected result and test.'
-  //   );
-  // });
+  test('Given one player at 30 and win, score is forty', () => {
+    ['PLAYER_ONE', 'PLAYER_TWO'].forEach(winner => {
+      const winnerPlayer = stringToPlayer(winner);
+      const current =
+        winner === 'PLAYER_ONE'
+          ? {
+              PLAYER_ONE: stringToPoint('THIRTY'),
+              PLAYER_TWO: stringToPoint('FIFTEEN'),
+            }
+          : {
+              PLAYER_ONE: stringToPoint('FIFTEEN'),
+              PLAYER_TWO: stringToPoint('THIRTY'),
+            };
+      const score = scoreWhenPoint(current, winnerPlayer);
+      const scoreExpected = forty(winnerPlayer, stringToPoint('FIFTEEN'));
+      expect(score).toStrictEqual(scoreExpected);
+    });
+  });
 });

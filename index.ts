@@ -9,7 +9,7 @@ import {
   Point,
   PointsData,
   Score,
-  thirty, forty,
+  thirty, forty, points,
 } from './types/score';
 import { pipe, Option } from 'effect';
 
@@ -120,7 +120,22 @@ export const scoreWhenForty = (
 // Tip: You can use pipe function from Effect to improve readability.
 // See scoreWhenForty function above.
 export const scoreWhenPoint = (current: PointsData, winner: Player): Score => {
-  throw new Error('not implemented');
+  const winnerPoint = current[winner];
+  const loser = otherPlayer(winner);
+  const loserPoint = current[loser];
+
+  switch (winnerPoint.kind) {
+    case 'LOVE':
+      return winner === 'PLAYER_ONE'
+        ? points(fifteen(), current.PLAYER_TWO)
+        : points(current.PLAYER_ONE, fifteen());
+    case 'FIFTEEN':
+      return winner === 'PLAYER_ONE'
+        ? points(thirty(), current.PLAYER_TWO)
+        : points(current.PLAYER_ONE, thirty());
+    case 'THIRTY':
+      return forty(winner, loserPoint);
+  }
 };
 
 // Exercice 3
