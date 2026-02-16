@@ -2,9 +2,11 @@ import { describe, expect, test } from '@jest/globals';
 import {
   otherPlayer,
   playerToString,
+  score,
   scoreWhenAdvantage,
   scoreWhenDeuce,
   scoreWhenForty,
+  scoreWhenGame,
   scoreWhenPoint,
   stringToPoint,
 } from '..';
@@ -118,6 +120,80 @@ describe('Tests for transition functions', () => {
       const score = scoreWhenPoint(current, winnerPlayer);
       const scoreExpected = forty(winnerPlayer, stringToPoint('FIFTEEN'));
       expect(score).toStrictEqual(scoreExpected);
+    });
+  });
+
+  // -------------------------TESTS EXERCICE 3-------------------------- //
+  test('Given scoreWhenGame, score is Game for winner', () => {
+    ['PLAYER_ONE', 'PLAYER_TWO'].forEach(winner => {
+      const winnerPlayer = stringToPlayer(winner);
+      const scoreResult = scoreWhenGame(winnerPlayer);
+      const scoreExpected = game(winnerPlayer);
+      expect(scoreResult).toStrictEqual(scoreExpected);
+    });
+  });
+
+  test('Given POINTS, score delegates to scoreWhenPoint', () => {
+    ['PLAYER_ONE', 'PLAYER_TWO'].forEach(winner => {
+      const winnerPlayer = stringToPlayer(winner);
+      const currentScore = points(
+        stringToPoint('LOVE'),
+        stringToPoint('FIFTEEN')
+      );
+      const scoreResult = score(currentScore, winnerPlayer);
+      const scoreExpected = scoreWhenPoint(
+        currentScore.pointsData,
+        winnerPlayer
+      );
+      expect(scoreResult).toStrictEqual(scoreExpected);
+    });
+  });
+
+  test('Given FORTY, score delegates to scoreWhenForty', () => {
+    ['PLAYER_ONE', 'PLAYER_TWO'].forEach(winner => {
+      const winnerPlayer = stringToPlayer(winner);
+      const currentScore = forty(
+        otherPlayer(winnerPlayer),
+        stringToPoint('FIFTEEN')
+      );
+      const scoreResult = score(currentScore, winnerPlayer);
+      const scoreExpected = scoreWhenForty(
+        currentScore.fortyData,
+        winnerPlayer
+      );
+      expect(scoreResult).toStrictEqual(scoreExpected);
+    });
+  });
+
+  test('Given DEUCE, score delegates to scoreWhenDeuce', () => {
+    ['PLAYER_ONE', 'PLAYER_TWO'].forEach(winner => {
+      const winnerPlayer = stringToPlayer(winner);
+      const currentScore = deuce();
+      const scoreResult = score(currentScore, winnerPlayer);
+      const scoreExpected = scoreWhenDeuce(winnerPlayer);
+      expect(scoreResult).toStrictEqual(scoreExpected);
+    });
+  });
+
+  test('Given ADVANTAGE, score delegates to scoreWhenAdvantage', () => {
+    ['PLAYER_ONE', 'PLAYER_TWO'].forEach(advantaged => {
+      const advantagedPlayer = stringToPlayer(advantaged);
+      const winnerPlayer = otherPlayer(advantagedPlayer);
+      const currentScore = advantage(advantagedPlayer);
+      const scoreResult = score(currentScore, winnerPlayer);
+      const scoreExpected = scoreWhenAdvantage(advantagedPlayer, winnerPlayer);
+      expect(scoreResult).toStrictEqual(scoreExpected);
+    });
+  });
+
+  test('Given GAME, score remains unchanged regardless of point winner', () => {
+    ['PLAYER_ONE', 'PLAYER_TWO'].forEach(gameWinner => {
+      const gameWinnerPlayer = stringToPlayer(gameWinner);
+      const pointWinner = otherPlayer(gameWinnerPlayer);
+      const currentScore = game(gameWinnerPlayer);
+      const scoreResult = score(currentScore, pointWinner);
+      const scoreExpected = game(gameWinnerPlayer);
+      expect(scoreResult).toStrictEqual(scoreExpected);
     });
   });
 });
