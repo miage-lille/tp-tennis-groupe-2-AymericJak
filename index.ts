@@ -1,6 +1,17 @@
-import { Player, stringToPlayer } from './types/player';
-import { Point, PointsData, Score } from './types/score';
-import { pipe, Option } from 'effect'
+import { isSamePlayer, Player, stringToPlayer } from './types/player';
+import {
+  advantage,
+  deuce,
+  FortyData,
+  game,
+  fifteen,
+  love,
+  Point,
+  PointsData,
+  Score,
+  thirty, forty,
+} from './types/score';
+import { pipe, Option } from 'effect';
 
 // -------- Tooling functions --------- //
 
@@ -34,6 +45,19 @@ export const pointToString = (point: Point): string => {
   }
 };
 
+export const stringToPoint = (str: string): Point => {
+  switch (str) {
+    case 'LOVE':
+      return love();
+    case 'FIFTEEN':
+      return fifteen();
+    case 'THIRTY':
+      return thirty();
+    default:
+      throw new Error(`Invalid point string: ${str}`);
+  }
+};
+
 export const scoreToString = (score: Score): string => {
   switch (score.kind) {
     case 'POINTS':
@@ -57,25 +81,40 @@ export const scoreToString = (score: Score): string => {
   }
 };
 
-export const scoreWhenDeuce = (winner: Player): Score => {
-  throw new Error('not implemented');
-};
+export const scoreWhenDeuce = (winner: Player): Score => advantage(winner);
 
 export const scoreWhenAdvantage = (
   advantagedPlayed: Player,
   winner: Player
 ): Score => {
-  throw new Error('not implemented');
+  if (isSamePlayer(advantagedPlayed, winner)) return game(winner);
+  return deuce();
+};
+
+export const incrementPoint = (point: Point): Option.Option<Point> => {
+  switch (point.kind) {
+    case 'LOVE':
+      return Option.some(fifteen());
+    case 'FIFTEEN':
+      return Option.some(thirty());
+    case 'THIRTY':
+      return Option.none();
+  }
 };
 
 export const scoreWhenForty = (
-  currentForty: unknown, // TO UPDATE WHEN WE KNOW HOW TO REPRESENT FORTY
+  currentForty: FortyData,
   winner: Player
 ): Score => {
-  throw new Error('not implemented');
+  if (isSamePlayer(currentForty.player, winner)) return game(winner);
+  return pipe(
+    incrementPoint(currentForty.otherPoint),
+    Option.match({
+      onNone: () => deuce(),
+      onSome: p => forty(currentForty.player, p) as Score,
+    })
+  );
 };
-
-
 
 // Exercice 2
 // Tip: You can use pipe function from Effect to improve readability.
